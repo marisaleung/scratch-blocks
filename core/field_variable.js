@@ -140,6 +140,7 @@ Blockly.FieldVariable.dropdownCreate = function() {
   var name = this.getText();
   // Don't create a new variable if there is nothing selected.
   var createSelectedVariable = name ? true : false;
+  var createdVar;
   var workspace = null;
   if (this.sourceBlock_) {
     workspace = this.sourceBlock_.workspace;
@@ -159,7 +160,8 @@ Blockly.FieldVariable.dropdownCreate = function() {
   }
   // Ensure that the currently selected variable is an option.
   if (createSelectedVariable && workspace) {
-    workspace.createVariable(name);
+    var id = this.value_;
+    createdVar = workspace.createVariable(name, '', id);
   }
   variableModelList.sort(Blockly.VariableModel.compareByName);
   var options = [];
@@ -170,6 +172,9 @@ Blockly.FieldVariable.dropdownCreate = function() {
   options.push([Blockly.Msg.RENAME_VARIABLE, Blockly.RENAME_VARIABLE_ID]);
   options.push([Blockly.Msg.DELETE_VARIABLE.replace('%1', name),
                Blockly.DELETE_VARIABLE_ID]);
+  if (createdVar) {
+    workspace.deleteVariableById(createdVar.getId());
+  }
   return options;
 };
 
@@ -182,6 +187,7 @@ Blockly.FieldVariable.dropdownCreate = function() {
  */
 Blockly.FieldVariable.prototype.onItemSelected = function(menu, menuItem) {
   var id = menuItem.getValue();
+  var name = menuItem.content_;
   // TODO(marisaleung): change setValue() to take in an id as the parameter.
   // Then remove itemText.
   var itemText;
@@ -191,8 +197,7 @@ Blockly.FieldVariable.prototype.onItemSelected = function(menu, menuItem) {
     // If the item selected is a variable, set itemText to the variable name.
     if (variable) {
       itemText = variable.name;
-    }
-    else if (id == Blockly.RENAME_VARIABLE_ID) {
+    } else if (id == Blockly.RENAME_VARIABLE_ID) {
       // Rename variable.
       var oldName = this.getText();
       Blockly.hideChaff();
@@ -208,7 +213,11 @@ Blockly.FieldVariable.prototype.onItemSelected = function(menu, menuItem) {
       // Delete variable.
       workspace.deleteVariable(this.getText());
       return;
+    } else {
+      variable = workspace.createVariable(name, '', id);
+      itemText = variable.name;
     }
+
 
     // Call any validation function, and allow it to override.
     itemText = this.callValidator(itemText);

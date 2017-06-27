@@ -409,9 +409,9 @@ Blockly.Workspace.prototype.deleteVariableById = function(id) {
 Blockly.Workspace.prototype.deleteVariableInternal_ = function(variable) {
   var uses = this.getVariableUses(variable.name);
   Blockly.Events.setGroup(true);
-  for (var i = 0; i < uses.length; i++) {
+  /*for (var i = 0; i < uses.length; i++) {
     uses[i].dispose(true, false);
-  }
+  }*/
   this.variableMap_.deleteVariable(variable);
   Blockly.Events.setGroup(false);
 };
