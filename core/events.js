@@ -121,6 +121,18 @@ Blockly.Events.VAR_DELETE = 'var_delete';
 Blockly.Events.VAR_RENAME = 'var_rename';
 
 /**
+ * Name of event that disables a variable.
+ * @const
+ */
+Blockly.Events.VAR_DISABLE = 'var_disable';
+
+/**
+ * Name of event that enables a variable.
+ * @const
+ */
+Blockly.Events.VAR_ENABLE = 'var_enable';
+
+/**
  * Name of event that records a UI change.
  * @const
  */
@@ -157,6 +169,7 @@ Blockly.Events.fireNow_ = function() {
   for (var i = 0, event; event = queue[i]; i++) {
     var workspace = Blockly.Workspace.getById(event.workspaceId);
     if (workspace) {
+      console.log(event)
       workspace.fireChangeListener(event);
     }
   }
@@ -326,6 +339,12 @@ Blockly.Events.fromJson = function(json, workspace) {
       break;
     case Blockly.Events.VAR_RENAME:
       event = new Blockly.Events.VarRename(null);
+      break;
+    case Blockly.Events.VAR_DISABLE:
+      event = new Blockly.Events.VarDisable(null);
+      break;
+    case Blockly.Events.VAR_ENABLE:
+      event = new Blockly.Events.VarEnable(null);
       break;
     case Blockly.Events.UI:
       event = new Blockly.Events.Ui(null);
@@ -966,7 +985,11 @@ Blockly.Events.VarCreate.prototype.run = function(forward) {
   if (forward) {
     workspace.createVariable(this.varName, this.varType, this.varId);
   } else {
+    // In case there is a var_enable event in the same group, prevent the
+    // flyoutCategory from re-enabling the variable.
+    Blockly.Variables.allowEnable = false;
     workspace.deleteVariableById(this.varId);
+    Blockly.Variables.allowEnable = false;
   }
 };
 
@@ -1083,6 +1106,80 @@ Blockly.Events.VarRename.prototype.run = function(forward) {
   } else {
     workspace.renameVariableById(this.varId, this.oldName);
   }
+};
+
+/**
+ * Class for a variable disable event.
+ * @param {Blockly.VariableModel} variable The disabled variable.
+ *     Null for a blank event.
+ * @extends {Blockly.Events.Abstract}
+ * @constructor
+ */
+Blockly.Events.VarDisable = function(variable) {
+  if (!variable) {
+    return;  // Blank event to be populated by fromJson.
+  }
+  Blockly.Events.VarDisable.superClass_.constructor.call(this, variable);
+};
+goog.inherits(Blockly.Events.VarDisable, Blockly.Events.Abstract);
+
+/**
+ * Type of this event.
+ * @type {string}
+ */
+Blockly.Events.VarDisable.prototype.type = Blockly.Events.VAR_DISABLE;
+
+/**
+ * Run a variable disable event.
+ * @param {boolean} forward True if run forward, false if run backward (undo).
+ */
+Blockly.Events.VarDisable.prototype.run = function(forward) {
+  var workspace = this.getEventWorkspace_();
+  if (!workspace) return;
+  var variable = workspace.getVariableById(this.varId);
+  if (forward) {
+    variable.disable();
+  } else {
+    variable.enable();
+  }
+  workspace.refreshToolboxSelection_();
+};
+
+/**
+ * Class for a variable enable event.
+ * @param {Blockly.VariableModel} variable The enabled variable.
+ *     Null for a blank event.
+ * @extends {Blockly.Events.Abstract}
+ * @constructor
+ */
+Blockly.Events.VarEnable = function(variable) {
+  if (!variable) {
+    return;  // Blank event to be populated by fromJson.
+  }
+  Blockly.Events.VarEnable.superClass_.constructor.call(this, variable);
+};
+goog.inherits(Blockly.Events.VarEnable, Blockly.Events.Abstract);
+
+/**
+ * Type of this event.
+ * @type {string}
+ */
+Blockly.Events.VarEnable.prototype.type = Blockly.Events.VAR_ENABLE;
+
+/**
+ * Run a variable enable event.
+ * @param {boolean} forward True if run forward, false if run backward (undo).
+ */
+Blockly.Events.VarEnable.prototype.run = function(forward) {
+  var workspace = this.getEventWorkspace_();
+  if (!workspace) return;
+  var variable = workspace.getVariableById(this.varId);
+  if (forward) {
+    variable.enable();
+  } else {
+    variable.disable();
+  }
+  workspace.refreshToolboxSelection_();
 };
 
 /**
