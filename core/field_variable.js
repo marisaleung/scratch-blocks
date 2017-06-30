@@ -164,8 +164,12 @@ Blockly.FieldVariable.dropdownCreate = function() {
   variableModelList.sort(Blockly.VariableModel.compareByName);
   var options = [];
   for (var i = 0; i < variableModelList.length; i++) {
+    var temporarilyDeleted = variableModelList[i].temporarilyDeleted;
+    if (!temporarilyDeleted ||(temporarilyDeleted && !this.sourceBlock_.isInFlyout
+      && this.getValue() == variableModelList[i].name)) {
     // Set the uuid as the internal representation of the variable.
-    options[i] = [variableModelList[i].name, variableModelList[i].getId()];
+      options.push([variableModelList[i].name, variableModelList[i].getId()]);
+    }
   }
   options.push([Blockly.Msg.RENAME_VARIABLE, Blockly.RENAME_VARIABLE_ID]);
   options.push([Blockly.Msg.DELETE_VARIABLE.replace('%1', name),
@@ -191,6 +195,10 @@ Blockly.FieldVariable.prototype.onItemSelected = function(menu, menuItem) {
     // If the item selected is a variable, set itemText to the variable name.
     if (variable) {
       itemText = variable.name;
+      if (variable.temporarilyDeleted) {
+        variable.temporarilyDeleted = false;
+        this.sourceBlock_.workspace.refreshToolboxSelection_ ();
+      }
     }
     else if (id == Blockly.RENAME_VARIABLE_ID) {
       // Rename variable.

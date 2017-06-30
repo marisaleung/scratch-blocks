@@ -979,10 +979,16 @@ Blockly.WorkspaceSvg.prototype.paste = function(xmlBlock) {
 
 /**
  * Refresh the toolbox unless there's a drag in progress.
+ * @param {boolean} deletedVariable True if a variable has been deleted.
+ *     false otherwise.
  * @private
  */
-Blockly.WorkspaceSvg.prototype.refreshToolboxSelection_ = function() {
+Blockly.WorkspaceSvg.prototype.refreshToolboxSelection_ = function(deletedVariable) {
+  var deleted = deletedVariable || false;
   if (this.toolbox_ && this.toolbox_.flyout_ && !this.currentGesture_) {
+    if (!deleted) {
+      this.variableMap_.bringBackTemporarilyDeletedVariables();
+    }
     this.toolbox_.refreshSelection();
   }
 };
@@ -1019,7 +1025,7 @@ Blockly.WorkspaceSvg.prototype.renameVariableById = function(id, newName) {
  */
 Blockly.WorkspaceSvg.prototype.deleteVariable = function(name) {
   Blockly.WorkspaceSvg.superClass_.deleteVariable.call(this, name);
-  this.refreshToolboxSelection_();
+  this.refreshToolboxSelection_(true);
 };
 
 /**
@@ -1030,7 +1036,7 @@ Blockly.WorkspaceSvg.prototype.deleteVariable = function(name) {
  */
 Blockly.WorkspaceSvg.prototype.deleteVariableById = function(id) {
   Blockly.WorkspaceSvg.superClass_.deleteVariableById.call(this, id);
-  this.refreshToolboxSelection_();
+  this.refreshToolboxSelection_(true);
 };
 
 /**

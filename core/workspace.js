@@ -370,20 +370,7 @@ Blockly.Workspace.prototype.deleteVariable = function(name) {
 
   var workspace = this;
   var variable = workspace.getVariable(name);
-  if (uses.length > 1) {
-    // Confirm before deleting multiple blocks.
-    Blockly.confirm(
-        Blockly.Msg.DELETE_VARIABLE_CONFIRMATION.replace('%1', uses.length).
-        replace('%2', name),
-        function(ok) {
-          if (ok) {
-            workspace.deleteVariableInternal_(variable);
-          }
-        });
-  } else {
-    // No confirmation necessary for a single block.
-    this.deleteVariableInternal_(variable);
-  }
+  this.deleteVariableInternal_(variable);
 };
 
 /**
@@ -409,10 +396,18 @@ Blockly.Workspace.prototype.deleteVariableById = function(id) {
 Blockly.Workspace.prototype.deleteVariableInternal_ = function(variable) {
   var uses = this.getVariableUses(variable.name);
   Blockly.Events.setGroup(true);
-  for (var i = 0; i < uses.length; i++) {
+//  if (this.toolbox_ && this.toolbox_.flyout_) {
+    //this.toolbox_.flyout_.clearOldVariableBlocks(variable);
+//    this.toolbox_.flyout_.clearOldBlocks_();
+//  }
+ /* for (var i = 0; i < uses.length; i++) {
     uses[i].dispose(true, false);
+  }*/
+  if (uses.length > 0) {
+    variable.disable();
+  } else {
+    this.variableMap_.deleteVariable(variable);
   }
-  this.variableMap_.deleteVariable(variable);
   Blockly.Events.setGroup(false);
 };
 

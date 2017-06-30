@@ -121,6 +121,12 @@ Blockly.Events.VAR_DELETE = 'var_delete';
 Blockly.Events.VAR_RENAME = 'var_rename';
 
 /**
+ * Name of event that disables a variable.
+ * @const
+ */
+Blockly.Events.VAR_DISABLE = 'var_disable';
+
+/**
  * Name of event that records a UI change.
  * @const
  */
@@ -157,6 +163,7 @@ Blockly.Events.fireNow_ = function() {
   for (var i = 0, event; event = queue[i]; i++) {
     var workspace = Blockly.Workspace.getById(event.workspaceId);
     if (workspace) {
+      console.log(event);
       workspace.fireChangeListener(event);
     }
   }
@@ -326,6 +333,9 @@ Blockly.Events.fromJson = function(json, workspace) {
       break;
     case Blockly.Events.VAR_RENAME:
       event = new Blockly.Events.VarRename(null);
+      break;
+    case Blockly.Events.VAR_DISABLE:
+      event = new Blockly.Events.VarDisable(null);
       break;
     case Blockly.Events.UI:
       event = new Blockly.Events.Ui(null);
@@ -1083,6 +1093,66 @@ Blockly.Events.VarRename.prototype.run = function(forward) {
   } else {
     workspace.renameVariableById(this.varId, this.oldName);
   }
+};
+
+/**
+ * Class for a variable disable event.
+ * @param {Blockly.VariableModel} variable The renamed variable.
+ *     Null for a blank event.
+ * @param {string} newName The new name the variable will be changed to.
+ * @extends {Blockly.Events.Abstract}
+ * @constructor
+ */
+Blockly.Events.VarDisable = function(variable) {
+  if (!variable) {
+    return;  // Blank event to be populated by fromJson.
+  }
+  Blockly.Events.VarDisable.superClass_.constructor.call(this, variable);
+  this.varType = variable.type;
+  this.varName = variable.name;
+};
+goog.inherits(Blockly.Events.VarDisable, Blockly.Events.Abstract);
+
+/**
+ * Type of this event.
+ * @type {string}
+ */
+Blockly.Events.VarDisable.prototype.type = Blockly.Events.VAR_DISABLE;
+
+/**
+ * Encode the event as JSON.
+ * @return {!Object} JSON representation.
+ */
+Blockly.Events.VarDisable.prototype.toJson = function() {
+  var json = Blockly.Events.VarDisable.superClass_.toJson.call(this);
+  json['varType'] = this.varType;
+  json['varName'] = this.varName;
+  return json;
+};
+
+/**
+ * Decode the JSON event.
+ * @param {!Object} json JSON representation.
+ */
+Blockly.Events.VarDisable.prototype.fromJson = function(json) {
+  Blockly.Events.VarDisable.superClass_.fromJson.call(this, json);
+  this.varType = json['varType'];
+  this.varName = json['varName'];
+};
+
+/**
+ * Run a variable disable event.
+ * @param {boolean} forward True if run forward, false if run backward (undo).
+ */
+Blockly.Events.VarDisable.prototype.run = function(forward) {
+  var workspace = this.getEventWorkspace_();
+  var variable = workspace.getVariableById(this.varId);
+  if (forward) {
+    variable.temporarilyDeleted = true;
+  } else {
+    variable.temporarilyDeleted = false;
+  }
+  workspace.refreshToolboxSelection_(true);
 };
 
 /**

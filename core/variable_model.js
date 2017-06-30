@@ -76,6 +76,8 @@ Blockly.VariableModel = function(workspace, name, opt_type, opt_id) {
    */
   this.id_ = opt_id || Blockly.utils.genUid();
 
+  this.temporarilyDeleted = false;
+
   Blockly.Events.fire(new Blockly.Events.VarCreate(this));
 };
 
@@ -84,6 +86,14 @@ Blockly.VariableModel = function(workspace, name, opt_type, opt_id) {
  */
 Blockly.VariableModel.prototype.getId = function() {
   return this.id_;
+};
+
+/**
+ * Disable the variable.
+ */
+Blockly.VariableModel.prototype.disable = function() {
+  this.temporarilyDeleted = true;
+  Blockly.Events.fire(new Blockly.Events.VarDisable(this));
 };
 
 /**

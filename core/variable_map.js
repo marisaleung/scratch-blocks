@@ -238,3 +238,18 @@ Blockly.VariableMap.prototype.getAllVariables = function() {
   }
   return all_variables;
 };
+
+/**
+ * Return all temporarily deleted variables by setting temporarilyDeleted
+ * attribute to false.
+ */
+Blockly.VariableMap.prototype.bringBackTemporarilyDeletedVariables = function() {
+  var keys = Object.keys(this.variableMap_);
+  for (var i = 0; i < keys.length; i++ ) {
+    for (var j=0, variable; variable = this.variableMap_[keys[i]][j]; j++) {
+      if (variable.temporarilyDeleted) {
+        variable.temporarilyDeleted = false;
+      }
+    }
+  }
+};
