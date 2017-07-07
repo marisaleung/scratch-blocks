@@ -124,9 +124,15 @@ Blockly.Msg.NEW_VARIABLE = 'Create variable...';
 /// prompt - Prompts the user to enter the name for a new variable.  See [https://github.com/google/blockly/wiki/Variables#dropdown-menu https://github.com/google/blockly/wiki/Variables#dropdown-menu].
 Blockly.Msg.NEW_VARIABLE_TITLE = 'New variable name:';
 /// alert - Tells the user that the name they entered is already in use.
-Blockly.Msg.VARIABLE_ALREADY_EXISTS = 'A variable named "%1" already exists.'
+Blockly.Msg.VARIABLE_ALREADY_EXISTS = 'A variable named "%1" already exists.';
+	/// alert - Tells the user that the name they entered is already in use by another type of variable.
+	Blockly.Msg.VARIABLE_ALREADY_EXISTS_FOR_DIFFERENT_TYPE_OF_VARIABLE = 'A variable named "%1" already exists for a different type of variable.';
 /// alert - Tells the user that the name they entered is already in use for a procedure.
-Blockly.Msg.PROCEDURE_ALREADY_EXISTS = 'A procedure named "%1" already exists.'
+Blockly.Msg.PROCEDURE_ALREADY_EXISTS = 'A procedure named "%1" already exists.';
+
+// List creation
+/// button text - Text on the button used to launch the list creation dialogue.
+Blockly.Msg.NEW_LIST = 'Create list...';
 
 // Variable deletion.
 /// confirm -  Ask the user to confirm their deletion of multiple uses of a variable.

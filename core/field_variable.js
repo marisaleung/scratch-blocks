@@ -40,14 +40,17 @@ goog.require('goog.string');
  *     a unique variable name will be generated.
  * @param {Function=} opt_validator A function that is executed when a new
  *     option is selected.  Its sole argument is the new option value.
+ * @param {!Array.<string>} variableTypes A list of the types of variables to be
+ *     included in the dropdown.
  * @extends {Blockly.FieldDropdown}
  * @constructor
  */
-Blockly.FieldVariable = function(varname, opt_validator) {
+Blockly.FieldVariable = function(varname, opt_validator, variableTypes) {
   Blockly.FieldVariable.superClass_.constructor.call(this,
       Blockly.FieldVariable.dropdownCreate, opt_validator);
   this.setValue(varname || '');
   this.addArgType('variable');
+  this.variableTypes = variableTypes;
 };
 goog.inherits(Blockly.FieldVariable, Blockly.FieldDropdown);
 
@@ -140,14 +143,19 @@ Blockly.FieldVariable.dropdownCreate = function() {
   // Don't create a new variable if there is nothing selected.
   var createSelectedVariable = name ? true : false;
   var workspace = null;
+  var variableTypes = this.variableTypes;
   if (this.sourceBlock_) {
     workspace = this.sourceBlock_.workspace;
   }
 
   if (workspace) {
+    var variableModelList = [];
     // Get a copy of the list, so that adding rename and new variable options
     // doesn't modify the workspace's list.
-    variableModelList = workspace.getVariablesOfType('');
+    for (var i = 0, variableType; variableType = variableTypes[i]; i++) {
+      var variables = workspace.getVariablesOfType(variableType);
+      variableModelList = variableModelList.concat(variables);
+    }
     for (var i = 0; i < variableModelList.length; i++){
       if (createSelectedVariable &&
           goog.string.caseInsensitiveEquals(variableModelList[i].name, name)) {
@@ -196,14 +204,7 @@ Blockly.FieldVariable.prototype.onItemSelected = function(menu, menuItem) {
       // Rename variable.
       var oldName = this.getText();
       Blockly.hideChaff();
-      Blockly.Variables.promptName(
-          Blockly.Msg.RENAME_VARIABLE_TITLE.replace('%1', oldName), oldName,
-          function(newName) {
-            if (newName) {
-              workspace.renameVariable(oldName, newName);
-            }
-          });
-      return;
+      Blockly.Variables.renameVariable(workspace, null, this.variableTypes, oldName);
     } else if (id == Blockly.DELETE_VARIABLE_ID) {
       // Delete variable.
       workspace.deleteVariable(this.getText());
